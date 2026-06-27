@@ -48,7 +48,7 @@ elif scenario == "3-Bet Cold Calling Ranges":
     nota_informativa = f"Range di Cold Call / 3-Bet contro openraise. Legenda: Azzurro = Bluff, Verde = Opzionale, Rosso = 3-Bet di Valore. Focus su: **{vs_pos}**."
 
 elif scenario == "Iso Over Limp Ranges":
-    nome_file = "ISO OVER LIMP RANGES.jpg"
+    nome_file = "ISO OVER LIMP RANGES.png"
     st.sidebar.subheader("Tipo di Limper")
     tipo_limp = st.sidebar.radio("Seleziona il profilo dell'avversario:", ["Default Iso-Raising", "Weak-Tight Limper (15/6)", "Weak-Loose Limper (50/8)"])
     nota_informativa = f"Strategia di Isolamento vs Limper. Focus sulla tabella: **{tipo_limp}**."
