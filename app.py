@@ -30,7 +30,7 @@ nota_informativa = ""
 
 # 2. LOGICA DINAMICA IN BASE ALLO SCENARIO SELEZIONATO
 if scenario == "Opening Raises (RFI)":
-    nome_file = "OPENING RAISES RANGES MICRO CRUSH.jpg"
+    nome_file = "OPENING RAISES RANGES MICRO CRUSH.png"
     st.sidebar.subheader("Posizione di Apertura")
     pos_rfi = st.sidebar.radio("Vedi posizione specifica all'interno della griglia:", ["Tutte", "UTG", "MP", "CO", "BTN", "SB"])
     nota_informativa = f"Visualizzazione globale dei range di Open Raise. Fai riferimento alla griglia **{pos_rfi}** nell'immagine."
