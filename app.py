@@ -1,109 +1,94 @@
 import streamlit as st
 import os
-from PIL import Image
 
-st.set_page_config(page_title="Poker Range Dashboard", layout="wide", page_icon="🃏")
+st.set_page_config(page_title="Poker Range Elite Dashboard", layout="wide", page_icon="🃏")
 
-st.title("🃏 Texas Hold'em Instant Range Viewer")
-st.write("Seleziona la tua situazione al tavolo. L'app isolerà e ingrandirà solo il range che ti interessa.")
+st.title("🃏 Texas Hold'em Professional Range Dashboard")
+st.write("Sincronizzato al 100% con la tua struttura di file .jpg")
 
 IMAGE_DIR = "immagini_poker"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 1. INTERFACCIA DI SELEZIONE RAPIDA
-col1, col2 = st.columns(2)
+# 1. BARRA LATERALE: APPROCCIO GENERALE
+st.sidebar.header("🛡️ / ⚔️ Approccio al Tavolo")
+atteggiamento = st.sidebar.radio(
+    "Seleziona lo Stile:",
+    ["Conservative", "Moderate"],
+    index=0
+)
+cartella_stile = atteggiamento.lower()
 
-with col1:
-    scenario = st.selectbox(
-        "1. Che tipo di azione/scenario?",
-        [
-            "Opening Raises (RFI)",
-            "3-Bet Ranges",
-            "3-Bet Cold Calling",
-            "Iso Over Limp",
-            "Over Limping",
-            "Over Calling"
-        ]
-    )
-
-with col2:
-    if scenario == "Opening Raises (RFI)":
-        sotto_opzione = st.selectbox("2. In che posizione sei?", ["UTG", "MP", "CO", "BTN", "SB"])
-    elif scenario == "3-Bet Ranges":
-        sotto_opzione = st.selectbox("2. In che posizione sei (o tipo di 3-bet)?", ["UTG 9.8%", "MP 12.50%", "CO/BTN 22/35%", "SB 22%", "3-BET BLUFF RANGE"])
-    elif scenario == "3-Bet Cold Calling":
-        sotto_opzione = st.selectbox("2. Contro quale posizione stai giocando?", ["VS UTG 10%", "VS MP 13%", "VS CO 23%"])
-    elif scenario == "Iso Over Limp":
-        sotto_opzione = st.selectbox("2. Che tipo di Limper è?", ["Default Iso-Raising", "Weak-Tight Limper: 15/6 Range", "Weak-Loose Limper: 50/8 Range"])
-    else:
-        sotto_opzione = "Unica"
-
-# 2. LOGICA DI RITAGLIO COORDINATE
-box = None
-nome_file = ""
-
-if scenario == "Opening Raises (RFI)":
-    nome_file = "OPENING RAISES RANGES MICRO CRUSH.png"
-    coordinate_rfi = {
-        "UTG": (0, 0, 310, 340),
-        "MP": (310, 0, 620, 340),
-        "CO": (620, 0, 940, 340),
-        "BTN": (0, 340, 310, 700),
-        "SB": (310, 340, 620, 700)
-    }
-    box = coordinate_rfi.get(sotto_opzione)
-
-elif scenario == "3-Bet Ranges":
-    nome_file = "3-BET RANGES.jpg"
-    coordinate_3b = {
-        "UTG 9.8%": (0, 0, 300, 330),
-        "MP 12.50%": (300, 0, 600, 330),
-        "CO/BTN 22/35%": (0, 430, 300, 760),
-        "SB 22%": (300, 430, 600, 760),
-        "3-BET BLUFF RANGE": (600, 230, 950, 650)
-    }
-    box = coordinate_3b.get(sotto_opzione)
-
-elif scenario == "3-Bet Cold Calling":
-    nome_file = "3-BET COLD CALLING RANGES.jpg"
-    coordinate_cc = {
-        "VS UTG 10%": (0, 0, 330, 380),
-        "VS MP 13%": (330, 0, 660, 380),
-        "VS CO 23%": (660, 0, 1000, 380)
-    }
-    box = coordinate_cc.get(sotto_opzione)
-
-elif scenario == "Iso Over Limp":
-    nome_file = "ISO OVER LIMP RANGES.jpg"
-    coordinate_iso = {
-        "Default Iso-Raising": (0, 0, 450, 400),
-        "Weak-Tight Limper: 15/6 Range": (0, 440, 480, 850),
-        "Weak-Loose Limper: 50/8 Range": (480, 440, 1000, 850)
-    }
-    box = coordinate_iso.get(sotto_opzione)
-
-elif scenario == "Over Limping":
-    nome_file = "OVER LIMPING.png"
-
-elif scenario == "Over Calling":
-    nome_file = "OVER CALLING.png"
-
-# 3. CARICAMENTO ED ELABORAZIONE IMMAGINE
-percorso_completo = os.path.join(BASE_DIR, IMAGE_DIR, nome_file)
+# 2. SELEZIONE DELLO SCENARIO
+st.write("### 1. Seleziona lo Scenario Pre-Flop")
+scenario = st.radio(
+    "Scenario Attuale:",
+    ["RFI", "3 Betting", "Cold Calling", "Difesa Bui", "Iso Raise", "Over Limping", "Over Calling"],
+    horizontal=True
+)
 
 st.write("---")
 
-if os.path.exists(percorso_completo):
-    img = Image.open(percorso_completo)
+nome_file_principale = ""
+nome_file_bluff = ""
+info_regola = ""
+
+# 3. ASSOCIAZIONE NOMI FILE SECONDO LE TUE IMMAGINI
+if scenario == "RFI":
+    st.write("### 2. Tua Posizione:")
+    pos = st.radio("Posizione:", ["UTG", "MP", "CO", "BTN", "SB"], horizontal=True)
+    nome_file_principale = f"{pos.lower()}.jpg"
+
+elif scenario == "3 Betting":
+    st.write("### 2. Posizione dell'Original Raiser:")
+    or_pos = st.radio("Oppo openraise da:", ["UTG", "MP", "CO", "BTN", "SB"], horizontal=True)
+    nome_file_principale = f"vs_{or_pos.lower()}.jpg"
+    nome_file_bluff = "3_bet_bluff.jpg"  # Mostrato sempre affiancato
+
+elif scenario == "Cold Calling":
+    st.write("### 2. Posizione dell'Original Raiser:")
+    vs_pos = st.radio("Oppo openraise da:", ["UTG", "MP", "CO"], horizontal=True)
+    nome_file_principale = f"vs_{vs_pos.lower()}.jpg"
+
+elif scenario == "Difesa Bui":
+    st.write("### 2. In che posizione sei?")
+    tua_pos = st.radio("Tuo Buio:", ["SB", "BB"], horizontal=True)
+    st.write("### 3. Che azione valuti?")
+    tua_azione = st.radio("Azione:", ["3_Bet", "Call"], horizontal=True)
+    nome_file_principale = f"{tua_pos.lower()}_{tua_azione.lower()}.jpg"
+
+elif scenario == "Iso Raise":
+    # Carica la variante corretta in base al toggle laterale
+    nome_file_principale = f"iso_raise_{cartella_stile}.jpg"
+
+elif scenario == "Over Limping":
+    nome_file_principale = "over_limping.jpg"
+    info_regola = "⚠️ **REGOLA:** Se dopo di noi c'è un giocatore AGGRESSIVO con rischio Raise o Iso Raise -> NO OVER LIMP, ma fai solo ISO RAISE."
+
+elif scenario == "Over Calling":
+    nome_file_principale = "over_calling.jpg"
+
+# 4. CARICAMENTO E RENDERING VISIVO
+if info_regola:
+    st.warning(info_regola)
+
+path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_stile, nome_file_principale)
+
+if nome_file_bluff:
+    path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_stile, nome_file_bluff)
+    col1, col2 = st.columns(2)
     
-    if box:
-        try:
-            img_ritagliata = img.crop(box)
-            st.image(img_ritagliata, caption=f"Range Isolato: {sotto_opzione}", width=500)
-        except Exception as e:
-            st.error("Errore durante il ritaglio. Mostro l'immagine intera.")
-            st.image(img, use_container_width=True)
-    else:
-        st.image(img, width=500)
+    with col1:
+        if os.path.exists(path_principale):
+            st.image(path_principale, caption=f"3-Bet Value vs {or_pos}", width=460)
+        else:
+            st.error(f"Manca file: `immagini_poker/{cartella_stile}/{nome_file_principale}`")
+    with col2:
+        if os.path.exists(path_bluff):
+            st.image(path_bluff, caption="Schema 3-Bet Bluff (Sempre visibile)", width=460)
+        else:
+            st.error(f"Manca file: `immagini_poker/{cartella_stile}/{nome_file_bluff}`")
 else:
-    st.error(f"❌ Immagine non trovata in: `{percorso_completo}`")
+    if os.path.exists(path_principale):
+        st.image(path_principale, caption=f"{scenario} ({atteggiamento})", width=520)
+    else:
+        st.error(f"❌ Immagine non trovata nel percorso: `immagini_poker/{cartella_stile}/{nome_file_principale}`")
