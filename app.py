@@ -5,7 +5,6 @@ import os
 st.set_page_config(page_title="Poker Range Dashboard", layout="wide", page_icon="🃏")
 
 # --- STYLING CSS CUSTOM ---
-# Questo blocco nasconde i menu di Streamlit e centra/ingrandisce l'immagine
 st.markdown("""
     <style>
         #MainMenu {visibility: hidden;}
@@ -31,7 +30,7 @@ IMAGE_DIR = "immagini_poker"
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # -------------------------------------------------------------------------
-# BARRA LATERALE (SIDEBAR): TUTTI I FILTRI SONO QUI ORA
+# BARRA LATERALE (SIDEBAR): TUTTI I FILTRI SONO QUI
 # -------------------------------------------------------------------------
 with st.sidebar:
     st.header("🎮 Controlli Sessione")
@@ -48,6 +47,7 @@ with st.sidebar:
     # Inizializziamo le variabili per il calcolo del percorso
     cartella_scenario = ""
     sottocartella_stile = ""
+    sottocartella_buio = ""
     nome_file_principale = ""
     nome_file_bluff = ""
     info_regola = ""
@@ -85,9 +85,12 @@ with st.sidebar:
 
     elif scenario == "Difesa Bui":
         cartella_scenario = "DIFESA BUI"
+        tua_pos_buio = st.radio("Tua Posizione sui Bui:", ["BB", "SB"], horizontal=True)
+        sottocartella_buio = tua_pos_buio.upper()  # Diventa BB o SB (Maiuscolo come su GitHub)
+        
         azione_buio = st.radio("Tua Intenzione:", ["3_Bet", "Call"])
-        nome_file_principale = f"{azione_buio.lower()}.jpg"
-        pos_label = azione_buio
+        nome_file_principale = f"{azione_buio.lower()}.jpg"  # Cerca 3_bet.jpg o call.jpg
+        pos_label = f"{tua_pos_buio} -> {azione_buio}"
 
     elif scenario == "Iso Raise":
         cartella_scenario = "ISO RAISE"
@@ -105,15 +108,17 @@ with st.sidebar:
         nome_file_principale = "over_calling.jpg"
 
     st.markdown("---")
-    st.image("https://poker-ranges.com/img/poker-icon.png", width=50)
 
 
 # -------------------------------------------------------------------------
 # AREA PRINCIPALE: VISUALIZZAZIONE GIGANTE
 # -------------------------------------------------------------------------
 
-# Calcolo del percorso
-if sottocartella_stile:
+# Composizione dinamica del percorso file in base alla struttura dei bui o degli altri scenari
+if scenario == "Difesa Bui":
+    path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_buio, nome_file_principale)
+    path_bluff = ""
+elif sottocartella_stile:
     path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_principale)
     path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_bluff) if nome_file_bluff else ""
 else:
@@ -121,7 +126,7 @@ else:
     path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, nome_file_bluff) if nome_file_bluff else ""
 
 
-# Titolo dinamico in cima per ricordare cosa stai guardando
+# Titolo dinamico in cima per orientamento rapido
 st.markdown(f"## {scenario} {stile_label} - {pos_label}")
 
 if info_regola:
@@ -132,17 +137,16 @@ if nome_file_bluff:
     col_cc1, col_cc2 = st.columns(2)
     with col_cc1:
         if os.path.exists(path_principale):
-            st.image(path_principale, caption="Value Range", use_column_width=True)
+            st.image(path_principale, caption="Value Range", use_container_width=True)
         else:
             st.error(f"File mancante: `{IMAGE_DIR}/{cartella_scenario}/{sottocartella_stile}/{nome_file_principale}`")
     with col_cc2:
         if os.path.exists(path_bluff):
-            st.image(path_bluff, caption="Bluff Range", use_column_width=True)
+            st.image(path_bluff, caption="Bluff Range", use_container_width=True)
         else:
             st.error(f"File mancante: `{IMAGE_DIR}/{cartella_scenario}/{sottocartella_stile}/{nome_file_bluff}`")
 else:
     if os.path.exists(path_principale):
-        # use_column_width=True rende l'immagine enorme nella colonna principale
-        st.image(path_principale, use_column_width=True)
+        st.image(path_principale, use_container_width=True)
     else:
-        st.error(f"❌ Immagine non trovata! Controlla percorso e case-sensitive.")
+        st.error(f"❌ Immagine non trovata! Controlla il percorso su GitHub.")
