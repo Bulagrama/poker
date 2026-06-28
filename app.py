@@ -1,89 +1,114 @@
 import streamlit as st
 import os
+from PIL import Image
 
-# Configurazione della pagina Streamlit
 st.set_page_config(page_title="Poker Range Dashboard", layout="wide", page_icon="🃏")
 
-st.title("🃏 Texas Hold'em Interactive Range Viewer")
-st.write("Seleziona lo scenario e la posizione per visualizzare istantaneamente il range pre-flop corretto.")
+st.title("🃏 Texas Hold'em Instant Range Viewer")
+st.write("Seleziona la tua situazione al tavolo. L'app isolerà e ingrandirà solo il range che ti interessa.")
 
-# Definiamo la cartella dove salverai le immagini
 IMAGE_DIR = "immagini_poker"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# 1. BARRA LATERALE: SELEZIONE DELLO SCENARIO PRINCIPALE
-st.sidebar.header("🕹️ Tipo di Azione / Scenario")
-scenario = st.sidebar.selectbox(
-    "Scegli la situazione pre-flop:",
-    [
-        "Opening Raises (RFI)",
-        "3-Bet Ranges",
-        "3-Bet Cold Calling Ranges",
-        "Iso Over Limp Ranges",
-        "Over Limping (Griglia Singola)",
-        "Over Calling (Griglia Singola)"
-    ]
-)
+# 1. INTERFACCIA DI SELEZIONE RAPIDA
+col1, col2 = st.columns(2)
 
-# Inizializziamo le variabili per il file e la nota
+with col1:
+    scenario = st.selectbox(
+        "1. Che tipo di azione/scenario?",
+        [
+            "Opening Raises (RFI)",
+            "3-Bet Ranges",
+            "3-Bet Cold Calling",
+            "Iso Over Limp",
+            "Over Limping",
+            "Over Calling"
+        ]
+    )
+
+with col2:
+    # Mostra le posizioni o i profili in base allo scenario
+    if scenario == "Opening Raises (RFI)":
+        sotto_opzione = st.selectbox("2. In che posizione sei?", ["UTG", "MP", "CO", "BTN", "SB"])
+    elif scenario == "3-Bet Ranges":
+        sotto_opzione = st.selectbox("2. In che posizione sei (o tipo di 3-bet)?", ["UTG 9.8%", "MP 12.50%", "CO/BTN 22/35%", "SB 22%", "3-BET BLUFF RANGE"])
+    elif scenario == "3-Bet Cold Calling":
+        sotto_opzione = st.selectbox("2. Contro quale posizione stai giocando?", ["VS UTG 10%", "VS MP 13%", "VS CO 23%"])
+    elif scenario == "Iso Over Limp":
+        sotto_opzione = st.selectbox("2. Che tipo di Limper è?", ["Default Iso-Raising", "Weak-Tight Limper: 15/6 Range", "Weak-Loose Limper: 50/8 Range"])
+    else:
+        sotto_opzione = "Unica"
+
+# 2. LOGICA DI RITAGLIO COORDINATE (Crop Box: left, upper, right, lower)
+# Cambia questi numeri se noti che il ritaglio è leggermente spostato rispetto alle tue immagini originali
+box = None
 nome_file = ""
-nota_informativa = ""
 
-# 2. LOGICA DINAMICA IN BASE ALLO SCENARIO SELEZIONATO
 if scenario == "Opening Raises (RFI)":
-    nome_file = "OPENING RAISES RANGES MICRO CRUSH.png"
-    st.sidebar.subheader("Posizione di Apertura")
-    pos_rfi = st.sidebar.radio("Vedi posizione specifica all'interno della griglia:", ["Tutte", "UTG", "MP", "CO", "BTN", "SB"])
-    nota_informativa = f"Visualizzazione globale dei range di Open Raise. Fai riferimento alla griglia **{pos_rfi}** nell'immagine."
+    nome_file = "OPENING RAISES RANGES MICRO CRUSH.jpg"
+     coordinate_rfi = {
+         "UTG": (0, 0, 310, 340),
+         "MP": (310, 0, 620, 340),
+         "CO": (620, 0, 940, 340),
+         "BTN": (0, 340, 310, 700),
+         "SB": (310, 340, 620, 700)
+     }
+    box = coordinate_rfi.get(sotto_opzione)
 
 elif scenario == "3-Bet Ranges":
     nome_file = "3-BET RANGES.jpg"
-    st.sidebar.subheader("Posizione del 3-Bettor")
-    pos_3b = st.sidebar.radio("Seleziona scenario:", ["Tutte", "UTG 9.8%", "MP 12.50%", "CO/BTN 22/35%", "SB 22%", "3-BET BLUFF RANGE"])
-    nota_informativa = f"Mappa delle 3-Bet. Guarda il quadrante relativo a: **{pos_3b}**."
+    coordinate_3b = {
+        "UTG 9.8%": (0, 0, 300, 330),
+        "MP 12.50%": (300, 0, 600, 330),
+        "CO/BTN 22/35%": (0, 430, 300, 760),
+        "SB 22%": (300, 430, 600, 760),
+        "3-BET BLUFF RANGE": (600, 230, 950, 650)
+    }
+    box = coordinate_3b.get(sotto_opzione)
 
-elif scenario == "3-Bet Cold Calling Ranges":
+elif scenario == "3-Bet Cold Calling":
     nome_file = "3-BET COLD CALLING RANGES.jpg"
-    st.sidebar.subheader("Versus Posizione")
-    vs_pos = st.sidebar.radio("Seleziona l'avversario che ha aperto:", ["Tutte", "VS UTG 10%", "VS MP 13%", "VS CO 23%"])
-    nota_informativa = f"Range di Cold Call / 3-Bet contro openraise. Legenda: Azzurro = Bluff, Verde = Opzionale, Rosso = 3-Bet di Valore. Focus su: **{vs_pos}**."
+    coordinate_cc = {
+        "VS UTG 10%": (0, 0, 330, 380),
+        "VS MP 13%": (330, 0, 660, 380),
+        "VS CO 23%": (660, 0, 1000, 380)
+    }
+    box = coordinate_cc.get(sotto_opzione)
 
-elif scenario == "Iso Over Limp Ranges":
-    nome_file = "ISO OVER LIMP RANGES.png"
-    st.sidebar.subheader("Tipo di Limper")
-    tipo_limp = st.sidebar.radio("Seleziona il profilo dell'avversario:", ["Default Iso-Raising", "Weak-Tight Limper (15/6)", "Weak-Loose Limper (50/8)"])
-    nota_informativa = f"Strategia di Isolamento vs Limper. Focus sulla tabella: **{tipo_limp}**."
+elif scenario == "Iso Over Limp":
+    nome_file = "ISO OVER LIMP RANGES.jpg"
+    coordinate_iso = {
+        "Default Iso-Raising": (0, 0, 450, 400),
+        "Weak-Tight Limper: 15/6 Range": (0, 440, 480, 850),
+        "Weak-Loose Limper: 50/8 Range": (480, 440, 1000, 850)
+    }
+    box = coordinate_iso.get(sotto_opzione)
 
-elif scenario == "Over Limping (Griglia Singola)":
-    nome_file = "OVER LIMPING.png"
-    nota_informativa = "⚠️ **REGOLA CRUCIALE:** Se dopo di noi c'è un giocatore aggressivo con rischio Raise o Iso Raise -> **NO OVER LIMP**, ma fai solo ISO RAISE."
+elif scenario == "Over Limping":
+    nome_file = "OVER LIMPING.png" # Griglia singola, non serve ritaglio
 
-elif scenario == "Over Calling (Griglia Singola)":
-    nome_file = "OVER CALLING.png"
-    nota_informativa = "Grigio scuro = Over-Calling Hands | Kaki/Beige = Potential 3-Betting Hands."
+elif scenario == "Over Calling":
+    nome_file = "OVER CALLING.png" # Griglia singola, non serve ritaglio
 
-# 3. VISUALIZZAZIONE DEL RANGE
-percorso_completo = os.path.join(IMAGE_DIR, nome_file)
+# 3. CARICAMENTO ED ELABORAZIONE IMMAGINE
+percorso_completo = os.path.join(BASE_DIR, IMAGE_DIR, nome_file)
 
 st.write("---")
-if nota_informativa:
-    st.info(nota_informativa)
 
 if os.path.exists(percorso_completo):
-    # Mostra l'immagine a schermo intero o adattata
-    st.image(percorso_completo, caption=f"File caricato: {nome_file}", use_container_width=True)
+    img = Image.open(percorso_completo)
+    
+    # Se lo scenario prevede un ritaglio ed è stato trovato il box coordinato
+    if box:
+        try:
+            # Ritagliamo l'immagine in base alle coordinate pixel
+            img_ritagliata = img.crop(box)
+            st.image(img_ritagliata, caption=f"Range Isolato: {sotto_opzione}", width=500)
+        except Exception as e:
+            st.error("Errore durante il ritaglio. Mostro l'immagine intera.")
+            st.image(img, use_container_width=True)
+    else:
+        # Mostra l'immagine intera se è già una griglia singola (Over Limping / Over Calling)
+        st.image(img, width=500)
 else:
-    st.error(f"❌ File non trovato: Assicurati di aver salvato l'immagine come `{nome_file}` dentro la cartella `{IMAGE_DIR}/`")
-    st.info("""
-    **Istruzioni per far funzionare l'app sul tuo computer:**
-    1. Crea una cartella sul PC (es. `poker_app`).
-    2. Salva questo codice in un file chiamato `app.py` in quella cartella.
-    3. Crea una sotto-cartella chiamata `immagini_poker`.
-    4. Inserisci le tue 6 immagini all'interno di `immagini_poker` rinominandole esattamente così:
-       - `OPENING RAISES RANGES MICRO CRUSH.jpg`
-       - `3-BET RANGES.jpg`
-       - `3-BET COLD CALLING RANGES.jpg`
-       - `ISO OVER LIMP RANGES.jpg`
-       - `OVER LIMPING.png`
-       - `OVER CALLING.png`
-    5. Apri il terminale, posizionati nella cartella e lancia il comando: `streamlit run app.py`
-    """)
+    st.error(f"❌ Immagine non trovata in: `{percorso_completo}`")
