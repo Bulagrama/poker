@@ -43,7 +43,7 @@ box = None
 nome_file = ""
 
 if scenario == "Opening Raises (RFI)":
-    nome_file = "OPENING RAISES RANGES MICRO CRUSH.jpg"
+    nome_file = "OPENING RAISES RANGES MICRO CRUSH.png"
     coordinate_rfi = {
         "UTG": (0, 0, 310, 340),
         "MP": (310, 0, 620, 340),
