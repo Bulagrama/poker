@@ -94,10 +94,11 @@ with st.sidebar:
 
     elif scenario == "Iso Raise":
         cartella_scenario = "ISO RAISE"
-        stile = st.radio(" Approccio Iso:", ["Conservativo", "Moderato"], horizontal=True)
+        stile = st.radio(" Approccio Iso:", ["Conservative", "Moderate"], horizontal=True)
+        sottocartella_stile = stile.upper()  # Forziamo CONSERVATIVE o MODERATE in maiuscolo
         stile_label = stile
         
-        if stile == "Conservativo":
+        if stile == "Conservative":
             nome_file_principale = "iso_raise_conservativo.jpg"
         else:
             nome_file_principale = "iso_raise_moderato.jpg"
@@ -118,12 +119,13 @@ with st.sidebar:
 # AREA PRINCIPALE: VISUALIZZAZIONE GIGANTE
 # -------------------------------------------------------------------------
 
-# Pulizia e calcolo dei percorsi reali (Blindato)
+# Composizione dinamica dei percorsi basata sulle cartelle di GitHub
 if scenario == "Difesa Bui":
     path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_buio, nome_file_principale)
-elif scenario in ["Iso Raise", "Over Limping", "Over Calling"]:
+elif scenario in ["Over Limping", "Over Calling"]:
     path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, nome_file_principale)
 else:
+    # Per RFI, 3 Betting, Cold Calling e ora anche Iso Raise, includiamo la sottocartella dello stile
     path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_principale)
 
 # Titolo dinamico in cima
@@ -132,14 +134,14 @@ st.markdown(f"## {scenario} {stile_label} {pos_label}")
 if info_regola:
     st.info(info_regola)
 
-# Debug log pulito
+# Debug log pulito per verificare dove l'app cerca l'immagine
 stringa_debug = f"{cartella_scenario}/"
 if sottocartella_stile: stringa_debug += f"{sottocartella_stile}/"
 if sottocartella_buio: stringa_debug += f"{sottocartella_buio}/"
 stringa_debug += nome_file_principale
 st.caption(f"🔎 Percorso attuale: `{IMAGE_DIR}/{stringa_debug}`")
 
-# Rendering grafico gigante o sdoppiato (solo se c'è esplicitamente il bluff)
+# Rendering grafico gigante o sdoppiato
 if scenario == "3 Betting" and nome_file_bluff:
     path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_bluff)
     col_cc1, col_cc2 = st.columns(2)
@@ -157,4 +159,4 @@ else:
     if os.path.exists(path_principale):
         st.image(path_principale, use_container_width=True)
     else:
-        st.error(f"❌ Immagine non trovata! Verifica che il file si trovi su GitHub in: `{path_principale.replace(BASE_DIR, '')}`")
+        st.error(f"❌ Immagine non trovato! Controlla se la struttura su GitHub corrisponde a: `{path_principale.replace(BASE_DIR, '')}`")
