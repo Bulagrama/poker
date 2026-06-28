@@ -27,7 +27,6 @@ with col1:
     )
 
 with col2:
-    # Mostra le posizioni o i profili in base allo scenario
     if scenario == "Opening Raises (RFI)":
         sotto_opzione = st.selectbox("2. In che posizione sei?", ["UTG", "MP", "CO", "BTN", "SB"])
     elif scenario == "3-Bet Ranges":
@@ -39,20 +38,19 @@ with col2:
     else:
         sotto_opzione = "Unica"
 
-# 2. LOGICA DI RITAGLIO COORDINATE (Crop Box: left, upper, right, lower)
-# Cambia questi numeri se noti che il ritaglio è leggermente spostato rispetto alle tue immagini originali
+# 2. LOGICA DI RITAGLIO COORDINATE
 box = None
 nome_file = ""
 
 if scenario == "Opening Raises (RFI)":
     nome_file = "OPENING RAISES RANGES MICRO CRUSH.jpg"
-     coordinate_rfi = {
-         "UTG": (0, 0, 310, 340),
-         "MP": (310, 0, 620, 340),
-         "CO": (620, 0, 940, 340),
-         "BTN": (0, 340, 310, 700),
-         "SB": (310, 340, 620, 700)
-     }
+    coordinate_rfi = {
+        "UTG": (0, 0, 310, 340),
+        "MP": (310, 0, 620, 340),
+        "CO": (620, 0, 940, 340),
+        "BTN": (0, 340, 310, 700),
+        "SB": (310, 340, 620, 700)
+    }
     box = coordinate_rfi.get(sotto_opzione)
 
 elif scenario == "3-Bet Ranges":
@@ -85,10 +83,10 @@ elif scenario == "Iso Over Limp":
     box = coordinate_iso.get(sotto_opzione)
 
 elif scenario == "Over Limping":
-    nome_file = "OVER LIMPING.png" # Griglia singola, non serve ritaglio
+    nome_file = "OVER LIMPING.png"
 
 elif scenario == "Over Calling":
-    nome_file = "OVER CALLING.png" # Griglia singola, non serve ritaglio
+    nome_file = "OVER CALLING.png"
 
 # 3. CARICAMENTO ED ELABORAZIONE IMMAGINE
 percorso_completo = os.path.join(BASE_DIR, IMAGE_DIR, nome_file)
@@ -98,17 +96,14 @@ st.write("---")
 if os.path.exists(percorso_completo):
     img = Image.open(percorso_completo)
     
-    # Se lo scenario prevede un ritaglio ed è stato trovato il box coordinato
     if box:
         try:
-            # Ritagliamo l'immagine in base alle coordinate pixel
             img_ritagliata = img.crop(box)
             st.image(img_ritagliata, caption=f"Range Isolato: {sotto_opzione}", width=500)
         except Exception as e:
             st.error("Errore durante il ritaglio. Mostro l'immagine intera.")
             st.image(img, use_container_width=True)
     else:
-        # Mostra l'immagine intera se è già una griglia singola (Over Limping / Over Calling)
         st.image(img, width=500)
 else:
     st.error(f"❌ Immagine non trovata in: `{percorso_completo}`")
