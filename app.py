@@ -97,7 +97,6 @@ with st.sidebar:
         stile = st.radio(" Approccio Iso:", ["Conservativo", "Moderato"], horizontal=True)
         stile_label = stile
         
-        # Mappatura blindata sui tuoi nomi file reali su GitHub
         if stile == "Conservativo":
             nome_file_principale = "iso_raise_conservativo.jpg"
         else:
@@ -119,21 +118,13 @@ with st.sidebar:
 # AREA PRINCIPALE: VISUALIZZAZIONE GIGANTE
 # -------------------------------------------------------------------------
 
-# Composizione dinamica del percorso
+# Pulizia e calcolo dei percorsi reali (Blindato)
 if scenario == "Difesa Bui":
     path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_buio, nome_file_principale)
-    path_bluff = ""
-elif scenario == "Iso Raise" or scenario == "Over Limping" or scenario == "Over Calling":
-    # Questi scenari NON hanno le sottocartelle CONSERVATIVE/MODERATE, i file sono direttamente dentro la cartella principale dello scenario
+elif scenario in ["Iso Raise", "Over Limping", "Over Calling"]:
     path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, nome_file_principale)
-    path_bluff = ""
-elif sottocartella_stile:
-    path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_principale)
-    path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_bluff) if nome_file_bluff else ""
 else:
-    path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, nome_file_principale)
-    path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, nome_file_bluff) if nome_file_bluff else ""
-
+    path_principale = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_principale)
 
 # Titolo dinamico in cima
 st.markdown(f"## {scenario} {stile_label} {pos_label}")
@@ -141,11 +132,16 @@ st.markdown(f"## {scenario} {stile_label} {pos_label}")
 if info_regola:
     st.info(info_regola)
 
-# Debug log visibile per capire dove sta cercando il file in tempo reale
-st.caption(f"🔎 Percorso di ricerca: `{IMAGE_DIR}/{cartella_scenario}/{sottocartella_stile + '/' if sottocartella_stile else ''}{sottocartella_buio + '/' if sottocartella_buio else ''}{nome_file_principale}`")
+# Debug log pulito
+stringa_debug = f"{cartella_scenario}/"
+if sottocartella_stile: stringa_debug += f"{sottocartella_stile}/"
+if sottocartella_buio: stringa_debug += f"{sottocartella_buio}/"
+stringa_debug += nome_file_principale
+st.caption(f"🔎 Percorso attuale: `{IMAGE_DIR}/{stringa_debug}`")
 
-# Rendering grafico gigante
-if nome_file_bluff:
+# Rendering grafico gigante o sdoppiato (solo se c'è esplicitamente il bluff)
+if scenario == "3 Betting" and nome_file_bluff:
+    path_bluff = os.path.join(BASE_DIR, IMAGE_DIR, cartella_scenario, sottocartella_stile, nome_file_bluff)
     col_cc1, col_cc2 = st.columns(2)
     with col_cc1:
         if os.path.exists(path_principale):
@@ -161,4 +157,4 @@ else:
     if os.path.exists(path_principale):
         st.image(path_principale, use_container_width=True)
     else:
-        st.error(f"❌ Immagine non trovata! Verifica che il file si trovi esattamente in: `{path_principale.replace(BASE_DIR, '')}`")
+        st.error(f"❌ Immagine non trovata! Verifica che il file si trovi su GitHub in: `{path_principale.replace(BASE_DIR, '')}`")
